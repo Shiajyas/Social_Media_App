@@ -84,6 +84,8 @@ export const useUserAuth = () => {
     },
   });
 
+
+
   const verifyOtpfMutation = useMutation({
     mutationFn: async ({ email, otp }: { email: string; otp: string }) => {
       return authService.verifyOtpf(email, otp);
@@ -123,7 +125,25 @@ export const useUserAuth = () => {
       handleMutationError(error, "An error occurred during registration.");
     },
   });
-
+  const googleAuthMutation = useMutation({
+    mutationFn: async (userData: any) => {
+      const response = await authService.googleAuth(userData);
+      console.log("Response from backend:", response); // Log the response to check the structure
+      return response
+    },
+    onSuccess: (data) => {
+      console.log(data, ">>>>>>>>>>>>>>>");
+      queryClient.setQueryData(["user"], data.user);
+      setUserAuthenticated(true);
+      localStorage.setItem("userToken", data.token);
+      toast.success("User verified");
+      navigate("/home");
+    },
+    onError: () => {
+      toast.error("Google login failed");
+    },
+  });
+  
   const { isPending: isRegisterLoading } = registerMutation;
   const { isPending: isOtpLoading } = verifyOtpMutation;
 
@@ -142,5 +162,7 @@ export const useUserAuth = () => {
     requestOtpMutation,
     registerMutation,
     isOtpLoading,
+    googleAuthMutation
+  
   };
 };

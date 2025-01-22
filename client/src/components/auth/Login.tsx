@@ -2,6 +2,8 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { img_Url } from "../../images/image";
+import { handleGoogleLogin } from "../../utils/handleGoogleLogin";
+import GoogleAuthProvider from "../../utils/GoogleAuthProvider";
 
 interface LoginFormInputs {
   email: string;
@@ -11,6 +13,7 @@ interface LoginFormInputs {
 interface LoginPageProps {
   role: "user" | "admin";
   onSubmit: (email: string, password: string) => void;
+  onGoogleLogin: () => void; // Callback for Google login
   redirectPath: string;
   title?: string;
   logoUrl?: string;
@@ -38,6 +41,8 @@ const LoginPage: React.FC<LoginPageProps> = ({
   const handleFormSubmit = (data: LoginFormInputs) => {
     onSubmit(data.email, data.password);
   };
+
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -124,9 +129,18 @@ const LoginPage: React.FC<LoginPageProps> = ({
             className="w-full py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-200"
             disabled={isLoading}
           >
-           <span className="text-black hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-200"> {isLoading ? "Logging in..." : "Login"}</span>
+           <span className="text-black"> {isLoading ? "Logging in..." : "Login"}</span>
           </button>
         </form>
+
+        {/* Divider */}
+        <div className="my-6 border-t border-gray-300"></div>
+
+        {/* Google Login Button */}
+      
+        {role === "user" && (
+       <GoogleAuthProvider onGoogleSignIn={handleGoogleLogin} />
+        )}
 
         {/* Register Link */}
         {role === "user" && (

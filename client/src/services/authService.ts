@@ -111,7 +111,17 @@ export const authService = {
         method: "GET",
         isAuthRequired: true,
         tokenKey: "adminToken",
-      },
+      }, 
       "Failed to fetch users"
     ),
+
+    googleAuth: (userData: any) =>
+      fetchData(
+        "/google",
+        {
+          method: "POST",
+         data : userData
+        },
+        "Failed to request OTP"
+      )
 };
