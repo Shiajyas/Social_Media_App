@@ -26,5 +26,6 @@ router.post("/request_otp", authController.requestOtp.bind(authController))
 router.post("/verify_otpf", authController.verify_Otp.bind(authController))
 router.post("/resend_otp", authController.resendOtp.bind(authController))
 router.post("/reset_password",authController.resetPassword.bind(authController))
+router.post("/google",authController.googleAuth.bind(authController))
 
 export default router;

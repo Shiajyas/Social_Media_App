@@ -33,10 +33,10 @@ const GoogleAuthProvider = ({ onGoogleSignIn }: { onGoogleSignIn: (user: any) =>
     const initializeGis = () => {
       if (window.google) {
         window.google.accounts.id.initialize({
-          client_id: process.env.GOOGLE_CLIENT_ID ||  "830047924664-uuplt30fb6pcr653s6jj1hm6obaan0c5.apps.googleusercontent.com",
+          client_id:  import.meta.env.VITE_GOOGLE_CLIENT_ID,
           callback: handleGoogleLogin,
         });
-
+  
         window.google.accounts.id.renderButton(
           document.getElementById('google-signin-button'),
           { theme: 'outline', size: 'large' } // Button customization options

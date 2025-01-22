@@ -1,4 +1,4 @@
-import express, { Application } from "express";
+import express, { Application, Request, Response, NextFunction } from "express";
 import bodyParser from "body-parser";
 import session from "express-session";
 import { logger } from "../infrastructure/utils/logger";
@@ -24,6 +24,12 @@ class App {
     // CORS Middleware
     this.app.use(corsMiddleware);
 
+    this.app.use((req:Request, res:Response, next:NextFunction) => {
+      res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+      res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+      next();
+    });
+
     // Session Middleware
     this.app.use(
       session({
@@ -33,6 +39,7 @@ class App {
         cookie: { secure: false }, // Adjust for HTTPS
       })
     );
+
 
     // Body Parser Middleware
     this.app.use(bodyParser.json());

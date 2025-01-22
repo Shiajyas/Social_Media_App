@@ -1,6 +1,6 @@
 import { IUser } from "../domain/interfaces/IUser";
 import { IUserRepository } from "../domain/interfaces/IUserRepository";
-// import { IUserService } from "./interfaces/IAuthService";
+import { verifyGoogleToken } from "../../infrastructure/utils/googleAuthUtils";
 import { IAuthService } from "./interfaces/IAuthService";
 import { createAccessToken, createRefreshToken } from "../../infrastructure/utils/createTokens";
 import bcrypt from "bcryptjs";
@@ -256,6 +256,42 @@ export class AuthService implements IAuthService {
       } catch (error) {
         throw new Error("Failed to get all users");
       }
+    }
+
+    async googleAuth(data: string): Promise<{token:string ,user:IUser}> {
+        try {
+          const payload = await verifyGoogleToken(data);
+          const { sub: googleId, email, name, picture } = payload;
+          if (!email) {
+            throw new Error("Email is required for Google authentication.");
+          }
+          let user = await this.userRepository.findByEmail(email);
+          if (!user) {
+            // If user doesn't exist, create a new one
+            const randomPassword = Math.random().toString(36).slice(-8);
+            user = {
+              googleId,
+              fullname: name,
+              username: email.split("@")[0], 
+              email,
+              password: randomPassword, 
+              avatar: picture,
+              mobile: "",
+            } as unknown as IUser;
+      
+              user = await this.userRepository.save(user);
+            }
+            const { accessToken } = this.generateTokens((user._id as string).toString());
+
+            return {
+              token:  accessToken, 
+              user: user,
+            }
+    
+        } catch (error) {
+          console.error(error);
+          throw new Error("Google authentication failed.");
+        }
     }
 
  }

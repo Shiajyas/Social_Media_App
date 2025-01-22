@@ -139,7 +139,9 @@ export const useUserAuth = () => {
       toast.success("User verified");
       navigate("/home");
     },
-    onError: () => {
+    onError: (error) => {
+      console.log(error);
+      
       toast.error("Google login failed");
     },
   });

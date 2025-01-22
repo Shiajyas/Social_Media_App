@@ -12,4 +12,5 @@ export interface IAuthService {
   resendOtp(email: string): Promise<boolean>;
   resetPassword(email: string, newPassword: string): Promise<boolean>;
   getAllUser(query: object): Promise<IUser[]>
+  googleAuth(idToken: string): Promise<{ user: IUser; token: string }>;
 }

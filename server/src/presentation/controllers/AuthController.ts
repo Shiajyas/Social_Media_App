@@ -184,4 +184,20 @@ export class AuthController {
         }
     }
 
+  async googleAuth(req : Request, res:Response) : Promise<void>{
+    try {
+        const { idToken } = req.body 
+       
+        const {user,token} = await this.userService.googleAuth(idToken);
+        // console.log(user,token,">>>>>>>>>");
+        
+        if(!user) throw new Error("Google login faild")
+            if(!token) throw new Error("Google login faild") 
+        res.status(200).json({ message: "User varified", user, token });
+    } catch (error) {
+        console.error(error);
+        res.status(400).json({ message: getErrorMessage(error) });
+    }
+  }
+
 }
