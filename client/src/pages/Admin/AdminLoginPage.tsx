@@ -22,7 +22,7 @@ const AdminLoginPage: React.FC = () => {
   return (
     <LoginPage
       role="admin"
-      redirectPath="/admin/dashboard"
+      redirectPath = "/admin/dashboard"
       title="Admin Login"
       logoUrl={img_Url}
       forgotPasswordLink="/admin/forgot-password"

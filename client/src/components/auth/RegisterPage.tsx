@@ -1,7 +1,6 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
-import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { img_Url } from "../../images/image";
 import { useUserAuth } from "../../hooks/useUserAuth";

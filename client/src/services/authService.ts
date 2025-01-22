@@ -6,22 +6,31 @@ import "react-toastify/dist/ReactToastify.css";
 const API_URL = 'http://localhost:3009';
 
 export const authService = {
+
   login: async (email: string, password: string, role: "user" | "admin") => {
     const endpoint = role === "admin" ? "/admin/login" : "/login";
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+        const response = await fetch(`${API_URL}${endpoint}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email, password, role }),
+        });
 
-    if (!response.ok) {
-      throw new Error("Invalid credentials");
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            console.error("Login failed:", errorResponse);  // Log the error response
+            throw new Error("Invalid credentials");
+        }
+
+        return response;
+    } catch (error) {
+        console.error("Error during login request:", error);
+        throw error;
     }
+},
 
-    return response;
-  },
     verifyOtp: async (email: string, enterdOtp: string) => {
         const response = await fetch(`${API_URL}/verify_otp`, {
           method: "POST",
@@ -34,6 +43,9 @@ export const authService = {
         if (!response.ok) {
           throw new Error("Invalid credentials");
         }
+
+        console.log(response,"res");
+        
       
         return response;
       },
@@ -78,11 +90,11 @@ export const authService = {
       console.log("Response Data:", data);
     
       if (response.ok) {
-        toast.success(data.msg || "OTP sent successfully, please verify it");
+    ;
         return data; // Return the parsed data
       } else {
-        toast.error(data.msg || "Registration failed. Please try again.");
-        throw new Error(data.msg || "Registration failed.");
+    
+        throw new Error(data.message || "Registration failed.");
       }
     },
     

@@ -3,12 +3,13 @@ import { authService } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAuthContext } from "../context/AuthContext";
 
 
 export const useAdminAuth = () => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
-  
+    const {setAdminAuthenticated} = useAuthContext()
 
     const { data: admin, isLoading, isError } = useQuery({
       queryKey: ["admin"],
@@ -31,6 +32,7 @@ export const useAdminAuth = () => {
         const adminData = responseData.user;
   
         queryClient.setQueryData(["admin"], adminData);
+        setAdminAuthenticated(true)
         localStorage.setItem("adminToken", token);
         navigate("/admin/dashboard");
       },
@@ -64,6 +66,7 @@ export const useAdminAuth = () => {
     const logout = () => {
       localStorage.removeItem("adminToken");
       queryClient.setQueryData(["admin"], null);
+      setAdminAuthenticated(false)
       navigate("/admin/login");
     };
   

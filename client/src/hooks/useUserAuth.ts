@@ -3,12 +3,16 @@ import { authService } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAuthContext } from "../context/AuthContext";
+
+
+
 
 
 export const useUserAuth = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
+  const { setUserAuthenticated } = useAuthContext();
 
   const { data: user, isLoading, isError } = useQuery({
     queryKey: ["user"],
@@ -31,7 +35,9 @@ export const useUserAuth = () => {
       const userData = responseData.user;
 
       queryClient.setQueryData(["user"], userData);
+      setUserAuthenticated(true);
       localStorage.setItem("userToken", token);
+      // queryClient.invalidateQueries({ queryKey: ["auth"] })
       navigate("/home");
     },
     onError: (error) => {
@@ -43,6 +49,8 @@ export const useUserAuth = () => {
   const logout = () => {
     localStorage.removeItem("userToken");
     queryClient.setQueryData(["user"], null);
+    // queryClient.invalidateQueries({queryKey:["auth"]})
+    setUserAuthenticated(false); 
     navigate("/login");
   };
 
@@ -53,6 +61,8 @@ export const useUserAuth = () => {
     },
     onSuccess: async (data) => {
       const responseData = await data.json();
+      console.log(responseData.token,"token");
+      
       localStorage.setItem("userToken", responseData.token);
       toast.success("User verified");
       queryClient.setQueryData(["user"], responseData.user);
@@ -100,6 +110,8 @@ export const useUserAuth = () => {
     }) => {
       // Call the register function
       const data = await authService.register(userData);
+      console.log(data,">>>>>>>123");
+      
       return data; // Return the parsed data directly
     },
     onSuccess: (responseData) => {

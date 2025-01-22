@@ -1,8 +1,10 @@
-import { createContext, useContext } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface AuthContextType {
   isUserAuthenticated: boolean;
   isAdminAuthenticated: boolean;
+  setUserAuthenticated: (value: boolean) => void;
+  setAdminAuthenticated: (value: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -12,12 +14,52 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  // Derive authentication states directly from localStorage
-  const isUserAuthenticated = !!localStorage.getItem("userToken");
-  const isAdminAuthenticated = !!localStorage.getItem("adminToken");
+  const [isUserAuthenticated, setIsUserAuthenticated] = useState(
+    !!localStorage.getItem("userToken")
+  );
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(
+    !!localStorage.getItem("adminToken")
+  );
+
+  const setUserAuthenticated = (value: boolean) => {
+    setIsUserAuthenticated(value);
+    if (value) {
+      localStorage.setItem("userToken", "dummyToken"); // Replace with actual token
+    } else {
+      localStorage.removeItem("userToken");
+    }
+  };
+
+  const setAdminAuthenticated = (value: boolean) => {
+    setIsAdminAuthenticated(value);
+    if (value) {
+      localStorage.setItem("adminToken", "dummyAdminToken"); // Replace with actual token
+    } else {
+      localStorage.removeItem("adminToken");
+    }
+  };
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setIsUserAuthenticated(!!localStorage.getItem("userToken"));
+      setIsAdminAuthenticated(!!localStorage.getItem("adminToken"));
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ isUserAuthenticated, isAdminAuthenticated }}>
+    <AuthContext.Provider
+      value={{
+        isUserAuthenticated,
+        isAdminAuthenticated,
+        setUserAuthenticated,
+        setAdminAuthenticated,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

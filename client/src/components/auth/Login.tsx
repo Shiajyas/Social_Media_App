@@ -22,7 +22,7 @@ interface LoginPageProps {
 const LoginPage: React.FC<LoginPageProps> = ({
   role,
   onSubmit,
-  redirectPath,
+  redirectPath = role === "admin" ? "/admin/dashboard" : "/home",
   title = "Login",
   logoUrl = img_Url,
   forgotPasswordLink = "/forgot-password",
