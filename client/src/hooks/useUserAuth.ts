@@ -6,7 +6,24 @@ import "react-toastify/dist/ReactToastify.css";
 import { useAuthContext } from "../context/AuthContext";
 
 
+const handleMutationError = (error: any, message: string) => {
+  console.error(error);
+  toast.error(message || "An error occurred.");
+};
 
+// Default function to manage success for mutations
+const handleMutationSuccess = (
+  data: any,
+  queryClient: any,
+  navigate: any,
+  setUserAuthenticated: any
+) => {
+  const { token, user } = data;
+  queryClient.setQueryData(["user"], user);
+  setUserAuthenticated(true);
+  localStorage.setItem("userToken", token);
+  navigate("/home");
+};
 
 
 export const useUserAuth = () => {
@@ -14,6 +31,7 @@ export const useUserAuth = () => {
   const navigate = useNavigate();
   const { setUserAuthenticated } = useAuthContext();
 
+  // Query to get user details if authenticated
   const { data: user, isLoading, isError } = useQuery({
     queryKey: ["user"],
     queryFn: authService.getUser,
@@ -24,57 +42,42 @@ export const useUserAuth = () => {
     },
   });
 
+  // Mutation for user login
   const loginMutation = useMutation({
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
       const response = await authService.login(email, password, "user");
-      return response;
+      return response; 
     },
-    onSuccess: async (data) => {
-      const responseData = await data.json();
-      const token = responseData.token;
-      const userData = responseData.user;
-
-      queryClient.setQueryData(["user"], userData);
-      setUserAuthenticated(true);
-      localStorage.setItem("userToken", token);
-      // queryClient.invalidateQueries({ queryKey: ["auth"] })
-      navigate("/home");
-    },
-    onError: (error) => {
-      console.error(error);
-      toast.error("Invalid email or password.");
-    },
+    onSuccess: (data) => handleMutationSuccess(data, queryClient, navigate, setUserAuthenticated),
+    onError: (error) => handleMutationError(error, "Invalid email or password."),
   });
 
+  // Logout function
   const logout = () => {
     localStorage.removeItem("userToken");
     queryClient.setQueryData(["user"], null);
-    // queryClient.invalidateQueries({queryKey:["auth"]})
     setUserAuthenticated(false); 
     navigate("/login");
   };
 
+  // Mutation for OTP verification
   const verifyOtpMutation = useMutation({
     mutationFn: async ({ email, enterdOtp }: { email: string; enterdOtp: string }) => {
       const response = await authService.verifyOtp(email, enterdOtp);
       return response;
     },
     onSuccess: async (data) => {
-      const responseData = await data.json();
-      console.log(responseData.token,"token");
-      
-      localStorage.setItem("userToken", responseData.token);
+      queryClient.setQueryData(["user"], data.user);
+      setUserAuthenticated(true);
+      localStorage.setItem("userToken", data.token);
       toast.success("User verified");
-      queryClient.setQueryData(["user"], responseData.user);
       navigate("/home");
     },
-    onError: (error) => {
-      console.error(error);
-      toast.error("Invalid OTP. Please try again.");
-    },
+    onError: (error) => handleMutationError(error, "Invalid OTP. Please try again."),
     retry: false,
   });
 
+  // Other mutations like requesting OTP, resetting password, etc.
   const requestOtpMutation = useMutation({
     mutationFn: async ({ email }: { email: string }) => {
       return authService.requestOtp(email);
@@ -99,6 +102,7 @@ export const useUserAuth = () => {
     },
   });
 
+  // Mutation for user registration
   const registerMutation = useMutation({
     mutationFn: async (userData: {
       fullname: string;
@@ -108,31 +112,35 @@ export const useUserAuth = () => {
       confirmPassword: string;
       gender: string;
     }) => {
-      // Call the register function
       const data = await authService.register(userData);
-      console.log(data,">>>>>>>123");
-      
-      return data; // Return the parsed data directly
+      return data; // Return parsed data directly
     },
     onSuccess: (responseData) => {
       queryClient.setQueryData(["userEmail"], { email: responseData.email });
       toast.success("Registration successful! Please verify your OTP.");
     },
     onError: (error: any) => {
-      console.error("Error during registration:", error.message || error);
-      toast.error(error.message || "An error occurred during registration.");
+      handleMutationError(error, "An error occurred during registration.");
     },
   });
-  
-  const {isPending: isRegisterLoading} = registerMutation;
-  const {isPending: isOtpLoading} = verifyOtpMutation;
 
-  return { user, isLoading, isError,isRegisterLoading,
-     loginMutation, logout, verifyOtpMutation,resendOtpMutation,
-     resetPasswordMutation,verifyOtpfMutation,requestOtpMutation ,
-     registerMutation,isOtpLoading
-    
-    };
+  const { isPending: isRegisterLoading } = registerMutation;
+  const { isPending: isOtpLoading } = verifyOtpMutation;
+
+ 
+  return {
+    user,
+    isLoading,
+    isError,
+    isRegisterLoading,
+    loginMutation,
+    logout,
+    verifyOtpMutation,
+    resendOtpMutation,
+    resetPasswordMutation,
+    verifyOtpfMutation,
+    requestOtpMutation,
+    registerMutation,
+    isOtpLoading,
+  };
 };
-
-
