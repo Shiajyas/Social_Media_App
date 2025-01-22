@@ -34,8 +34,11 @@ const UserList = () => {
               email: string;
               gender: string;
               role: string;
-            }) => (
-              <tr key={user.id} className="hover:bg-gray-100">
+            }, index: number) => (
+              <tr
+                key={`${user.id}-${index}`} // Combines id and index for uniqueness
+                className="hover:bg-gray-100"
+              >
                 <td className="border border-gray-300 px-4 py-2">{user.username}</td>
                 <td className="border border-gray-300 px-4 py-2">{user.fullName}</td>
                 <td className="border border-gray-300 px-4 py-2">{user.email}</td>

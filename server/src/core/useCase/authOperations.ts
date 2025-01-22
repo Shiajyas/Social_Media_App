@@ -1,13 +1,14 @@
 import { IUser } from "../domain/interfaces/IUser";
 import { IUserRepository } from "../domain/interfaces/IUserRepository";
-import { IUserService } from "../../infrastructure/services/interfaces/IUserService";
+// import { IUserService } from "./interfaces/IAuthService";
+import { IAuthService } from "./interfaces/IAuthService";
 import { createAccessToken, createRefreshToken } from "../../infrastructure/utils/createTokens";
 import bcrypt from "bcryptjs";
 import User from "../domain/models/userModel";
 import { IOtpService } from "../../infrastructure/services/interfaces/IOtpService";
 
 
-export class UserService implements IUserService {
+export class AuthService implements IAuthService {
   private userRepository: IUserRepository;
   private otpService: IOtpService;
 
@@ -132,7 +133,130 @@ export class UserService implements IUserService {
         refreshToken
       }
     } catch (error) {
+      console.log(error);
+      
       throw new Error("Login failed.");
     }
   }
-}
+
+  async requestOtp(email:string) : Promise<void>{
+   try {
+    
+    if (!email) throw new Error("Email is required");
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await this.userRepository.findByEmail(email);
+
+    if (!user) throw new Error("User not found");
+
+    const otp = this.otpService.generateOtp(email);
+    console.log("otp for forgot password : ",otp);
+    
+    const userData: IUser = {...user, otp } as IUser;
+
+    const isOtpSent = await this.otpService.sendOtpEmail(email, otp) as boolean;
+    if (!isOtpSent) {
+      throw new Error("Failed to send OTP via email.");
+    }
+    this.otpService.storeOtp(email, otp, userData);
+      return;
+   } catch (error) {
+    throw new Error ("Internal server error")
+   }
+  }
+
+  async verify_Otp(email: string, enterdOtp: string): Promise<{ userData: IUser }> {
+    try {
+      const { valid, expired } = this.otpService.verifyOtp(email, enterdOtp);
+
+      if (expired) {
+        throw new Error("OTP has expired, please request a new one.");
+      }
+
+      if (!valid) {
+        throw new Error("Invalid OTP, please try again.");
+      }
+
+      const user = await this.userRepository.findByEmail(email);
+      if (!user) {
+        throw new Error("User not found.");
+      }
+
+      return { userData: user };
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log(error.message);
+        throw new Error(error.message);
+      } else {
+        console.log(String(error));
+        throw new Error("Failed to verify OTP.");
+      }
+    
+    }
+  }
+
+  async resendOtp(email:string): Promise<boolean>{
+    try {
+      const user = await this.userRepository.findByEmail(email);
+      if (!user) {
+        throw new Error("User not found.");
+      }
+      const otp = this.otpService.generateOtp(email);
+      console.log("otp for resend : ",otp);
+      const userData: IUser = {...user, otp } as IUser;
+      const isOtpSent = await this.otpService.sendOtpEmail(email, otp) as boolean;
+      if (!isOtpSent) {
+        throw new Error("Failed to send OTP via email.");
+      }
+      this.otpService.storeOtp(email, otp, userData);
+      return true;
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log(error.message);
+        throw new Error(error.message);
+      } else {
+        console.log(String(error));
+        throw new Error("Failed to resend OTP.");
+      }
+    
+    }
+    }
+
+    async resetPassword(email: string, password:string): Promise<boolean> {
+      try {
+    console.log(email,password);
+    
+        
+    if (!email || !password) {
+      throw new Error("Email and Password are required");
+    }
+
+        const passwordHash = await bcrypt.hash(password, 12);
+
+        const user = await this.userRepository.findByEmailAndUpdatePwd(email,passwordHash)
+        console.log(user);
+        
+      if(!user) throw new Error ("User not found") 
+      
+    
+      return true;
+      } catch (error) {
+        console.log(error);
+        
+        throw new Error("Failed to update password");
+      }
+    }
+
+    async getAllUser(query: object):Promise <IUser[]>{
+      try {
+        const users = await this.userRepository.find({});
+        // console.log(users);
+        
+        return users;
+      } catch (error) {
+        throw new Error("Failed to get all users");
+      }
+    }
+
+ }
+

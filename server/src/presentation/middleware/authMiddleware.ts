@@ -28,6 +28,7 @@ export class AuthMiddleware {
       }
 
       const user = await User.findOne({ _id: decoded.id });
+      
       // console.log(user,"user");
       
       if (!user) {

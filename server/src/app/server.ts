@@ -3,7 +3,8 @@ import bodyParser from "body-parser";
 import session from "express-session";
 import { logger } from "../infrastructure/utils/logger";
 import corsMiddleware from "../presentation/middleware/corsMiddleware";
-import authRoutes from "../presentation/routes/authRoutes"
+import userAuthRoutes from "../presentation/routes/users/userAuthRoutes"
+import adminAuthRoutes from "../presentation/routes/admin/adminAuthRoutes"
 
 // import authRoutes from "../../presentation/routes/authRoutes"
 
@@ -51,7 +52,8 @@ class App {
     });
 
     // Authentication Routes
-    this.app.use("/", authRoutes);
+    this.app.use("/", userAuthRoutes);
+    this.app.use("/admin", adminAuthRoutes );
   }
 
   public start(): void {

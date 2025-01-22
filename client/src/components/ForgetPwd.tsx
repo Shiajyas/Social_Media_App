@@ -26,8 +26,7 @@ const ForgotPasswordPage: React.FC = () => {
     formState: { errors },
   } = useForm<ForgotPasswordFormInputs>();
 
-  const { requestOtpMutation, verifyOtpfMutation, resetPasswordMutation } =
-  useUserAuth();
+  const { requestOtpMutation, verifyOtpfMutation, resetPasswordMutation } = useUserAuth();
   const navigate = useNavigate();
   const location = useLocation()
 

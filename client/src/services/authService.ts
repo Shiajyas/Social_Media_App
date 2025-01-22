@@ -20,9 +20,12 @@ export const authService = {
 
         if (!response.ok) {
             const errorResponse = await response.json();
-            console.error("Login failed:", errorResponse);  // Log the error response
+            console.error("Login failed:", errorResponse);  
             throw new Error("Invalid credentials");
         }
+
+        console.log(response,">>>>>>>>>>>>>>>>>>>321");
+        
 
         return response;
     } catch (error) {
@@ -190,6 +193,7 @@ export const authService = {
   },  
   
   getAllUsers: async () => {
+  try {
     const token = localStorage.getItem('adminToken');
     if (!token) {
         throw new Error('Invalid token');
@@ -200,12 +204,20 @@ export const authService = {
         Authorization: token 
       }
     }); 
+    // console.log(response,"><><><><>");
+    
     if (!response.ok) {
+      const errorResponse = await response.json();
+      console.error("Login failed:", errorResponse); 
       throw new Error("Failed to fetch users");
     }
 
-  
+
     return response.json();
+  } catch (error) {
+    console.log(error);
+    
+  }
   },
 
 }
